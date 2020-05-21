@@ -21,29 +21,18 @@ export class TasksController {
         return this.tasksService.getTaskById(id);
     }
 
-    // @Get()
-    // getTasks(@Query(ValidationPipe) taskFilters: TaskFiltersDto): Task[] {
-    //     if(Object.keys(taskFilters).length) {
-    //         console.log(taskFilters);
-    //         return this.tasksService.getTasksWithFilter(taskFilters);
-    //     }
-    //     else {
-    //         return this.tasksService.getAllTasks();
-    //     }
-    // }
+    @Get()
+    getTasks(@Query(ValidationPipe) taskFilters: TaskFiltersDto): Promise<Task[]> {
+        return this.tasksService.getTasks(taskFilters);
+    }
 
-    // @Get('/:id')
-    // getTaskById(@Param('id') id: string): Task {
-    //     return this.tasksService.getTaskById(id);
-    // }
+    @Delete('/:id')
+    deleteTask(@Param('id', ParseIntPipe) id: number): Promise<Task> {
+        return this.tasksService.deleteTask(id);
+    }
 
-    // @Delete('/:id')
-    // deleteTask(@Param('id') id: string): Task[] {
-    //     return this.tasksService.deleteTask(id);
-    // }
-
-    // @Patch('/:id/status')
-    // updateTaskStatus(@Param('id') id: string, @Body('status', TaskStatusValidator) status: TaskStatus): Task[] {
-    //     return this.tasksService.updateTaskStatus(id, status);
-    // }
+    @Patch('/:id/status')
+    updateTaskStatus(@Param('id', ParseIntPipe) id: number, @Body('status', TaskStatusValidator) status: TaskStatus): Promise<Task> {
+        return this.tasksService.updateTaskStatus(id, status);
+    }
 }
