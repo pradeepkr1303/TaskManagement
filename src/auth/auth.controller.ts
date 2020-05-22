@@ -14,8 +14,13 @@ export class AuthController {
         return this.authService.getAllUsers();
     }
 
-    @Post()
+    @Post('/signup')
     signUpUser(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<User> {
         return this.authService.signUpUser(authCredentialsDto);
+    }
+
+    @Post('/signin')
+    signIn(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto) {
+        return this.authService.validateUserPassword(authCredentialsDto);
     }
 }
