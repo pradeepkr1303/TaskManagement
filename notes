@@ -1,0 +1,119 @@
+Nestjs
+	1. Use 'npm run start:dev' to start application in watch mode
+	2. Nestjs runs in port 3000 by default
+	3. 'nest g --schematics --name' is used to generate the files
+	
+Pipes
+	npm install --save class-validator class-transformer
+	
+TypeORM
+	npm install --save @nestjs/typeorm typeorm pg
+	entities: [__dirname + '/../**/*.entity.{js,ts}']
+	
+	typeorm.config.ts
+		import { TypeOrmModuleOptions } from '@nestjs/typeorm'
+
+		export const typeOrmConfig: TypeOrmModuleOptions = {
+			type: "postgres",
+			host: "localhost",
+			port: 5432,
+			username: "postgres",
+			password: "qwerty1234",
+			database: "taskmanagement",
+			entities: [__dirname + './../**/*.entity.{js,ts}'],
+			synchronize: true
+		};
+		
+40. Creating an task entity
+	entity class should extend BaseEntity class from typeorm package
+	class should have @Entity() annotation
+	class variable should be decorated with @PrimaryGeneratedColumn() if that variable is a primary key of the table
+	class variable should have @Column() decorator if that needs to be stored in table
+	
+41. Creating a task repository
+	Repository class should extend Repository<Entity> class
+	@EntityRepository(Entity) decorator should be present for class
+	To make the repository available anywhere in the module import it in the module.
+		In the import array of module.ts file add 'TypeOrmModule.forFeature(['Add repository class here'])'
+		This makes the repositories added in array injectable in the module anywhere
+		
+		@Module({
+		  imports: [
+			TypeOrmModule.forFeature([TaskRepository]),
+		  ],
+		  controllers: [TasksController],
+		  providers: [TasksService]
+		})
+		
+42. Preparation for task service refactoring
+	Cleaned all codes in service and controller which was done using local variable tasks[]
+	removed uuid package using 'npm uninstall uuid'
+	
+43. Persistance: Getting a task by id
+	In the service define a variable for repository. In this case for TaskRepository.
+	
+	Constructor(
+		@InjectRepository(TaskRepository)
+		private taskRepository: TaskRepository,
+	) {}
+	
+	@InjectRepository() repository will inject the specified repository to create an instance of repository.
+	
+	Use taskRepository.findOne(id) to get an object.
+	
+	async getTaskById(id: number): Promise<Task> {
+        const found = await this.taskRepository.findOne(id);
+
+        if (!found) {
+            throw new NotFoundException(`task with "${id}" not found`);
+        }
+
+        return found;
+    }
+	
+	whenever async await is used we should return the method as promise<type>
+	
+43. Persistance: Creating a task
+	Here we are creating a task variable of type Task.entity
+	
+	tasks.service.ts
+		async createTask(createTaskDto: createTaskDto): Promise<Task> {
+			const { title, description } = createTaskDto;
+
+			const task: Task = new Task();
+			task.title = title;
+			task.description = description;
+			task.status = TaskStatus.OPEN;
+
+			await task.save();
+
+			return task;
+			
+		}
+	
+	The above code used entity mthod to save the task to DB. ie task.save()
+	
+	So repository can be used by writing the DB logic in repositor itself. here copy and paste the service code above in repository
+	
+	task.repository.ts
+		async createTask(createTaskDto: createTaskDto): Promise<Task> {
+			const { title, description } = createTaskDto;
+
+			const task: Task = new Task();
+			task.title = title;
+			task.description = description;
+			task.status = TaskStatus.OPEN;
+
+			await task.save();
+
+			return task;
+			
+    }
+	tasks.service.ts
+		async createTask(createTaskDto: createTaskDto): Promise<Task> {
+			return await this.taskRepository.createTask(createTaskDto);
+		}
+		
+	The repositories can also contain custom methods in addition to predefined methods
+	
+	
